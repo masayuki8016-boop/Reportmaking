@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2年生実習「化学基礎」</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+
+  <!-- 送信成功画面 -->
+  <div id="success-screen" class="hidden min-h-screen flex-col items-center justify-center">
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
+      <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">送信完了！</h2>
+      <p class="text-gray-600 mb-6">
+        本日の実習、お疲れ様でした。<br />
+        データはスプレッドシートに保存されました。
+      </p>
+      <button onclick="resetForm()" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200">
+        新しい報告書を書く
+      </button>
+    </div>
+  </div>
+
+  <!-- 入力画面 -->
+  <div id="app-screen" class="max-w-3xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden">
+    <!-- ヘッダー -->
+    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between text-white">
+      <div class="flex items-center space-x-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+        </svg>
+        <h1 class="text-xl font-bold">2年生実習「化学基礎」</h1>
+      </div>
+      <div class="text-sm bg-blue-700 px-3 py-1 rounded-full flex items-center">
+        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+        </svg>
+        自動保存中
+      </div>
+    </div>
+
+    <!-- プログレスバー -->
+    <div class="w-full bg-gray-200 h-2">
+      <div id="progress-bar" class="bg-green-500 h-2 transition-all duration-300 ease-in-out" style="width: 50%"></div>
+    </div>
+
+    <div class="p-6 sm:p-8">
+      <!-- ページ情報 -->
+      <div class="mb-6 flex justify-between items-center border-b pb-4">
+        <h2 id="page-title" class="text-2xl font-bold text-gray-800">1. 計画</h2>
+        <span id="page-indicator" class="text-gray-500 font-medium">Page 1 / 2</span>
+      </div>
+
+      <form id="log-form">
+        
+        <!-- ページ 1: 計画 -->
+        <div id="page-1" class="space-y-6 animate-fadeIn">
+          <div class="bg-blue-50 p-4 rounded-lg flex items-start text-blue-800 mb-6">
+            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-sm">授業の始めに、このページ（実施計画まで）を記入してください。途中でブラウザを閉じても入力内容は自動で保存されます。</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">
+              ① クラス番号（4ケタ）<span class="text-red-500 ml-1">*</span>
+            </label>
+            <input type="text" id="studentId" name="studentId" placeholder="例: 1234" maxlength="4" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" />
+            <p id="studentId-error" class="text-red-500 text-sm mt-1 hidden font-medium">※数字4ケタで入力してください。</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">② 本日の目標</label>
+            <textarea id="goal" name="goal" rows="3" placeholder="今日達成したいこと、検証したい仮説などを記入してください"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">③ 使用する器具、試薬等</label>
+            <textarea id="equipment" name="equipment" rows="3" placeholder="ビーカー、温度計、塩酸...など"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">④ 実施計画</label>
+            <textarea id="plan" name="plan" rows="4" placeholder="どのような手順で実験を行うか記入してください"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div class="pt-4">
+            <button type="button" onclick="goToPage(2)"
+              class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 flex items-center justify-center transition duration-200">
+              次へ
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- ページ 2: 実験後 -->
+        <div id="page-2" class="space-y-6 animate-fadeIn hidden">
+          <div class="bg-green-50 p-4 rounded-lg flex items-start text-green-800 mb-6">
+            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-sm">実験が終わったら、結果や考察を記入して最後に「送信」を押してください。</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">⑤ 実施内容</label>
+            <textarea id="content" name="content" rows="4" placeholder="実際にどのような操作を行ったか記入してください" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">⑥ 実施結果</label>
+            <textarea id="result" name="result" rows="4" placeholder="得られたデータ、観察された現象を記入してください" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">⑦ 考察と改善</label>
+            <textarea id="reflection" name="reflection" rows="4" placeholder="結果から分かったこと、うまくいかなかった点の原因と改善策を記入してください" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">⑧ 次回に向けて</label>
+            <textarea id="nextStepPlan" name="nextStepPlan" rows="3" placeholder="次回はどのような実験・調査を行う予定ですか？" required
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">⑨ 感想</label>
+            <textarea id="impressions" name="impressions" rows="3" placeholder="今日の実験の感想を自由に記入してください"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+
+          <!-- 追加：⑩ 自己評価ルーブリック（タブレット最適化版） -->
+          <div>
+            <label class="block text-base font-bold text-gray-700 mb-3">⑩ 自己評価（4:とてもそう思う 〜 1:そう思わない）</label>
+            <div class="space-y-4 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
+              <!-- 評価項目1 -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span class="text-base text-gray-700 font-bold">主体的に実験・研究に取り組めた</span>
+                <div class="flex space-x-2 sm:space-x-3 bg-white p-1.5 rounded-xl border border-gray-200">
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalProactive" value="4" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6" required><span class="text-lg font-bold">4</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalProactive" value="3" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">3</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalProactive" value="2" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">2</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalProactive" value="1" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">1</span></label>
+                </div>
+              </div>
+              <hr class="border-gray-200">
+              <!-- 評価項目2 -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span class="text-base text-gray-700 font-bold">班員と協力し、役割を全うできた</span>
+                <div class="flex space-x-2 sm:space-x-3 bg-white p-1.5 rounded-xl border border-gray-200">
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalTeamwork" value="4" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6" required><span class="text-lg font-bold">4</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalTeamwork" value="3" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">3</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalTeamwork" value="2" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">2</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalTeamwork" value="1" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">1</span></label>
+                </div>
+              </div>
+              <hr class="border-gray-200">
+              <!-- 評価項目3 -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span class="text-base text-gray-700 font-bold">結果に対して深く考察できた</span>
+                <div class="flex space-x-2 sm:space-x-3 bg-white p-1.5 rounded-xl border border-gray-200">
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalDeepThinking" value="4" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6" required><span class="text-lg font-bold">4</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalDeepThinking" value="3" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">3</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalDeepThinking" value="2" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">2</span></label>
+                  <label class="flex items-center justify-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-blue-50 transition w-16 sm:w-20"><input type="radio" name="evalDeepThinking" value="1" class="text-blue-600 w-5 h-5 sm:w-6 sm:h-6"><span class="text-lg font-bold">1</span></label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex space-x-4 pt-4">
+            <button type="button" onclick="goToPage(1)"
+              class="w-1/3 bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 flex items-center justify-center transition duration-200">
+              <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+              戻る
+            </button>
+            <button type="submit" id="submit-btn"
+              class="w-2/3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center transition duration-200">
+              <span id="submit-text">報告書を送信する</span>
+              <svg id="submit-icon" class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ★ GASのウェブアプリURL設定済み ★
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbzrDyBJpFGBp0Otd3hxtmNAJSF3F8EW4mXAk_Dv46I1u6TKi4LlYPjL6NcuIiBwoirp/exec';
+    
+    // フォームの要素を取得
+    const form = document.getElementById('log-form');
+    const inputs = form.querySelectorAll('input, textarea');
+    let currentStep = 1;
+
+    // ローカルストレージ（自動保存）からデータを復元
+    window.onload = () => {
+      const savedData = localStorage.getItem('researchLogData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        inputs.forEach(input => {
+          if (data[input.name] !== undefined) {
+            if (input.type === 'radio') {
+              if (input.value === data[input.name]) input.checked = true;
+            } else {
+              input.value = data[input.name];
+            }
+          }
+        });
+      }
+      const savedStep = localStorage.getItem('researchLogStep');
+      if (savedStep) goToPage(parseInt(savedStep));
+    };
+
+    // 入力があるたびに自動保存
+    inputs.forEach(input => {
+      input.addEventListener('input', () => {
+        // 全角数字が入力されたら自動的に半角に変換する
+        if (input.name === 'studentId') {
+          input.value = input.value.replace(/[０-９]/g, function(s) {
+            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+          });
+        }
+
+        const data = {};
+        inputs.forEach(i => {
+          if (i.type === 'radio') {
+            if (i.checked) data[i.name] = i.value;
+          } else {
+            data[i.name] = i.value;
+          }
+        });
+        localStorage.setItem('researchLogData', JSON.stringify(data));
+        
+        // 入力中にクラス番号が正しく直されたらエラー表示を消す
+        if (input.name === 'studentId' && /^[0-9]{4}$/.test(input.value)) {
+          document.getElementById('studentId-error').classList.add('hidden');
+          input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+          input.classList.add('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-500');
+        }
+      });
+    });
+
+    // ページ切り替え処理
+    function goToPage(step) {
+      if (step === 2) {
+        // クラス番号のバリデーション（半角数字4桁チェック）
+        const studentIdInput = document.getElementById('studentId');
+        const studentId = studentIdInput.value;
+        const errorMsg = document.getElementById('studentId-error');
+
+        if (!/^[0-9]{4}$/.test(studentId)) {
+          // エラーの視覚的表示
+          errorMsg.classList.remove('hidden');
+          studentIdInput.classList.remove('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-500');
+          studentIdInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+          
+          // 入力欄を揺らして気づかせるアニメーション
+          studentIdInput.animate([
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-5px)' },
+            { transform: 'translateX(5px)' },
+            { transform: 'translateX(-5px)' },
+            { transform: 'translateX(5px)' },
+            { transform: 'translateX(0)' }
+          ], { duration: 300 });
+          
+          studentIdInput.focus();
+          return; // 次のページに進ませない
+        }
+      }
+
+      currentStep = step;
+      localStorage.setItem('researchLogStep', step);
+      
+      document.getElementById('page-1').classList.toggle('hidden', step !== 1);
+      document.getElementById('page-2').classList.toggle('hidden', step !== 2);
+      
+      document.getElementById('page-title').innerText = step === 1 ? '1. 計画' : '2. 実験後の記録';
+      document.getElementById('page-indicator').innerText = `Page ${step} / 2`;
+      document.getElementById('progress-bar').style.width = step === 1 ? '50%' : '100%';
+      
+      window.scrollTo(0, 0);
+    }
+
+    // 送信処理
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
+        alert('エラー: GASのURLが設定されていません。HTMLファイルのコードを書き換えてください。');
+        return;
+      }
+
+      // 送信中UIに変更
+      const btn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('submit-text');
+      const btnIcon = document.getElementById('submit-icon');
+      
+      btn.disabled = true;
+      btn.classList.replace('bg-blue-600', 'bg-blue-400');
+      btn.classList.replace('hover:bg-blue-700', 'hover:bg-blue-400');
+      btnText.innerText = '送信中...';
+      btnIcon.classList.add('hidden');
+
+      // 送信データの作成
+      const formData = {};
+      inputs.forEach(i => {
+        if (i.type === 'radio') {
+          if (i.checked) formData[i.name] = i.value;
+        } else {
+          formData[i.name] = i.value;
+        }
+      });
+
+      try {
+        // GASへデータ送信
+        await fetch(GAS_URL, {
+          method: 'POST',
+          // CORSエラーを回避するため text/plain で送信
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(formData)
+        });
+
+        // 成功処理
+        document.getElementById('app-screen').classList.add('hidden');
+        document.getElementById('success-screen').classList.remove('hidden');
+        document.getElementById('success-screen').classList.add('flex');
+        
+        // 保存データをクリア
+        localStorage.removeItem('researchLogData');
+        localStorage.removeItem('researchLogStep');
+
+      } catch (error) {
+        alert('送信エラーが発生しました。インターネット接続を確認してください。');
+        console.error(error);
+      } finally {
+        // ボタンUIを戻す
+        btn.disabled = false;
+        btn.classList.replace('bg-blue-400', 'bg-blue-600');
+        btn.classList.replace('hover:bg-blue-400', 'hover:bg-blue-700');
+        btnText.innerText = '報告書を送信する';
+        btnIcon.classList.remove('hidden');
+      }
+    });
+
+    // リセット処理
+    function resetForm() {
+      form.reset();
+      localStorage.removeItem('researchLogData');
+      localStorage.removeItem('researchLogStep');
+      goToPage(1);
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('success-screen').classList.add('hidden');
+      document.getElementById('success-screen').classList.remove('flex');
+    }
+  </script>
+</body>
+</html>
