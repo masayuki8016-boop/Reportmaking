@@ -17,8 +17,16 @@
     }
     .hidden { display: none !important; }
     
-    /* PDF出力用のスタイル（ブラウザ上では非表示） */
+    /* --- PDF出力用のスタイル --- */
+    /* 画面には表示させず、PDF生成時のみ読み取れるように画面外に配置します */
+    #pdf-template-wrapper {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
     #pdf-template {
+      width: 800px; /* PC幅に固定してレイアウト崩れを防ぐ */
+      background-color: white;
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
       padding: 40px;
       color: #333;
@@ -75,7 +83,7 @@
         本日の実習、お疲れ様でした。
       </p>
       <p class="text-blue-600 font-bold mb-6">
-        報告書のPDFをダウンロードしました。<br>各自で保管してください。
+        報告書のPDFをダウンロードしました。<br>各自の端末に保存されているか確認してください。
       </p>
       <button onclick="resetForm()" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200">
         新しい報告書を書く
@@ -258,82 +266,84 @@
     </div>
   </div>
 
-  <!-- PDF生成用の隠しテンプレート -->
-  <div id="pdf-template" class="hidden">
-    <div class="pdf-header">
-      <h1 style="font-size: 24px; margin: 0;">2年生実習「化学基礎」報告書</h1>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">① クラス番号</div>
-      <div class="pdf-content" id="pdf-studentId"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">② 本日の目標</div>
-      <div class="pdf-content" id="pdf-goal"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">③ 使用する器具、試薬等</div>
-      <div class="pdf-content" id="pdf-equipment"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">④ 実施計画</div>
-      <div class="pdf-content" id="pdf-plan"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">⑤ 実施内容</div>
-      <div class="pdf-content" id="pdf-content"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">⑥ 実施結果</div>
-      <div class="pdf-content" id="pdf-result"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">⑦ 考察と改善</div>
-      <div class="pdf-content" id="pdf-reflection"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">⑧ 次回に向けて</div>
-      <div class="pdf-content" id="pdf-nextStepPlan"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">⑨ 感想</div>
-      <div class="pdf-content" id="pdf-impressions"></div>
-    </div>
-    
-    <div class="pdf-section">
-      <div class="pdf-label">⑩ 自己評価</div>
-      <div class="pdf-grid">
-        <div class="pdf-eval-box">
-          <div style="font-size: 12px; color: #666;">主体性</div>
-          <div style="font-size: 18px; font-weight: bold;" id="pdf-evalProactive"></div>
-        </div>
-        <div class="pdf-eval-box">
-          <div style="font-size: 12px; color: #666;">協働性</div>
-          <div style="font-size: 18px; font-weight: bold;" id="pdf-evalTeamwork"></div>
-        </div>
-        <div class="pdf-eval-box">
-          <div style="font-size: 12px; color: #666;">考察力</div>
-          <div style="font-size: 18px; font-weight: bold;" id="pdf-evalDeepThinking"></div>
+  <!-- PDF生成用の隠しテンプレート（画面外に配置） -->
+  <div id="pdf-template-wrapper">
+    <div id="pdf-template">
+      <div class="pdf-header">
+        <h1 style="font-size: 24px; margin: 0;">2年生実習「化学基礎」報告書</h1>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">① クラス番号</div>
+        <div class="pdf-content" id="pdf-studentId"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">② 本日の目標</div>
+        <div class="pdf-content" id="pdf-goal"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">③ 使用する器具、試薬等</div>
+        <div class="pdf-content" id="pdf-equipment"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">④ 実施計画</div>
+        <div class="pdf-content" id="pdf-plan"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">⑤ 実施内容</div>
+        <div class="pdf-content" id="pdf-content"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">⑥ 実施結果</div>
+        <div class="pdf-content" id="pdf-result"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">⑦ 考察と改善</div>
+        <div class="pdf-content" id="pdf-reflection"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">⑧ 次回に向けて</div>
+        <div class="pdf-content" id="pdf-nextStepPlan"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">⑨ 感想</div>
+        <div class="pdf-content" id="pdf-impressions"></div>
+      </div>
+      
+      <div class="pdf-section">
+        <div class="pdf-label">⑩ 自己評価</div>
+        <div class="pdf-grid">
+          <div class="pdf-eval-box">
+            <div style="font-size: 12px; color: #666;">主体性</div>
+            <div style="font-size: 18px; font-weight: bold;" id="pdf-evalProactive"></div>
+          </div>
+          <div class="pdf-eval-box">
+            <div style="font-size: 12px; color: #666;">協働性</div>
+            <div style="font-size: 18px; font-weight: bold;" id="pdf-evalTeamwork"></div>
+          </div>
+          <div class="pdf-eval-box">
+            <div style="font-size: 12px; color: #666;">考察力</div>
+            <div style="font-size: 18px; font-weight: bold;" id="pdf-evalDeepThinking"></div>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <div style="margin-top: 30px; font-size: 10px; color: #999; text-align: right;">
-      発行日時: <span id="pdf-timestamp"></span>
+      
+      <div style="margin-top: 30px; font-size: 10px; color: #999; text-align: right;">
+        発行日時: <span id="pdf-timestamp"></span>
+      </div>
     </div>
   </div>
 
   <script>
-    // ★ GASのウェブアプリURL設定済み ★
+    // ★ GASのウェブアプリURL ★
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzrDyBJpFGBp0Otd3hxtmNAJSF3F8EW4mXAk_Dv46I1u6TKi4LlYPjL6NcuIiBwoirp/exec';
     
     const form = document.getElementById('log-form');
@@ -413,7 +423,6 @@
     // PDF生成とダウンロードを実行する関数
     async function generatePDF(data) {
       const template = document.getElementById('pdf-template');
-      template.classList.remove('hidden');
       
       // テンプレートにデータを反映
       document.getElementById('pdf-studentId').innerText = data.studentId;
@@ -439,13 +448,8 @@
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      try {
-        await html2pdf().set(opt).from(template).save();
-      } catch (err) {
-        console.error('PDF生成エラー:', err);
-      } finally {
-        template.classList.add('hidden'); // PDF生成後に再び隠す
-      }
+      // PDF生成（awaitで完了を待つ）
+      await html2pdf().set(opt).from(template).save();
     }
 
     form.addEventListener('submit', async (e) => {
@@ -457,7 +461,7 @@
       
       btn.disabled = true;
       btn.classList.add('opacity-50');
-      btnText.innerText = '送信中...';
+      btnText.innerText = 'PDF作成中...';
       btnIcon.classList.add('hidden');
 
       const formData = {};
@@ -469,16 +473,23 @@
         }
       });
 
+      // 1. まずPDFを生成・ダウンロードさせる（エラーが起きても止まらないようにする）
       try {
-        // 1. まずGASへデータを送信する
+        await generatePDF(formData);
+      } catch (err) {
+        console.error('PDF生成エラー:', err);
+      }
+
+      // 2. 次にGASへデータを送信する
+      try {
+        btnText.innerText = 'データ送信中...';
+        
         await fetch(GAS_URL, {
           method: 'POST',
+          mode: 'no-cors', // CORSエラーを回避
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify(formData)
         });
-
-        // 2. 送信成功後、PDFを生成してダウンロードさせる
-        await generatePDF(formData);
 
         // 3. 成功画面に切り替え
         document.getElementById('app-screen').classList.add('hidden');
@@ -489,7 +500,7 @@
         localStorage.removeItem('researchLogStep');
 
       } catch (error) {
-        alert('送信エラーが発生しました。インターネット接続を確認してください。');
+        alert('データ送信エラーが発生しました。インターネット接続を確認してください。');
         console.error(error);
       } finally {
         btn.disabled = false;
