@@ -278,6 +278,10 @@
         <h1 style="font-size: 24px; margin: 0;">2年生実習「化学基礎」報告書</h1>
       </div>
       
+      <div style="text-align: right; margin-bottom: 20px; font-weight: bold; font-size: 14px;">
+        提出日時: <span id="pdf-submit-time"></span>
+      </div>
+
       <div class="pdf-section">
         <div class="pdf-label">① クラス番号</div>
         <div class="pdf-content" id="pdf-studentId"></div>
@@ -339,10 +343,6 @@
             <div style="font-size: 18px; font-weight: bold;" id="pdf-evalDeepThinking"></div>
           </div>
         </div>
-      </div>
-      
-      <div style="margin-top: 30px; font-size: 10px; color: #999; text-align: right;">
-        発行日時: <span id="pdf-timestamp"></span>
       </div>
     </div>
   </div>
@@ -442,7 +442,7 @@
       document.getElementById('pdf-evalProactive').innerText = data.evalProactive || '-';
       document.getElementById('pdf-evalTeamwork').innerText = data.evalTeamwork || '-';
       document.getElementById('pdf-evalDeepThinking').innerText = data.evalDeepThinking || '-';
-      document.getElementById('pdf-timestamp').innerText = new Date().toLocaleString();
+      document.getElementById('pdf-submit-time').innerText = new Date().toLocaleString('ja-JP');
 
       // PDF出力の設定（pagebreak設定で途切れを防ぐ）
       const opt = {
@@ -474,7 +474,7 @@
       
       btn.disabled = true;
       btn.classList.add('opacity-50');
-      btnText.innerText = 'PDF作成中...';
+      btnText.innerText = '送信＆PDF作成中...';
       btnIcon.classList.add('hidden');
 
       const formData = {};
@@ -486,23 +486,19 @@
         }
       });
 
-      // 1. PDF生成・ダウンロード
       try {
-        await generatePDF(formData);
-      } catch (err) {
-        console.error('PDF生成エラー:', err);
-      }
-
-      // 2. GASへデータ送信
-      try {
-        btnText.innerText = 'データ送信中...';
-        
-        await fetch(GAS_URL, {
+        // 1. GASへのデータ送信とPDF生成を同時に開始（並列処理で時間短縮）
+        const sendTask = fetch(GAS_URL, {
           method: 'POST',
           mode: 'no-cors', // CORSエラーを回避
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify(formData)
         });
+        
+        const pdfTask = generatePDF(formData);
+
+        // 2. 両方の処理が終わるまで待つ
+        await Promise.all([sendTask, pdfTask]);
 
         // 3. 成功画面に切り替え
         document.getElementById('app-screen').classList.add('hidden');
@@ -513,7 +509,7 @@
         localStorage.removeItem('researchLogStep');
 
       } catch (error) {
-        alert('データ送信エラーが発生しました。インターネット接続を確認してください。');
+        alert('処理中にエラーが発生しました。インターネット接続を確認してください。');
         console.error(error);
       } finally {
         btn.disabled = false;
