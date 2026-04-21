@@ -17,12 +17,22 @@
     }
     .hidden { display: none !important; }
     
-    /* PDF出力用のスタイル */
+    /* --- PDF出力用のスタイル --- */
+    /* 常に一番上に配置しつつ、透明にして操作不能にする（高さと幅を正しく認識させるため） */
+    #pdf-template-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 800px;
+      z-index: -9999;
+      opacity: 0.001; 
+      pointer-events: none;
+    }
     #pdf-template {
-      width: 800px; /* PC幅に固定してレイアウト崩れを防ぐ */
+      width: 100%;
       background-color: white;
       font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-      padding: 40px;
+      padding: 30px;
       color: #333;
       line-height: 1.6;
     }
@@ -261,8 +271,8 @@
     </div>
   </div>
 
-  <!-- PDF生成用の隠しテンプレート（画面外に配置） -->
-  <div id="pdf-template-wrapper" class="hidden">
+  <!-- PDF生成用の隠しテンプレート（裏側で常にレンダリングさせる） -->
+  <div id="pdf-template-wrapper">
     <div id="pdf-template">
       <div class="pdf-header">
         <h1 style="font-size: 24px; margin: 0;">2年生実習「化学基礎」報告書</h1>
@@ -417,7 +427,6 @@
 
     // PDF生成とダウンロードを実行する関数
     async function generatePDF(data) {
-      const wrapper = document.getElementById('pdf-template-wrapper');
       const template = document.getElementById('pdf-template');
       
       // テンプレートにデータを反映
@@ -435,43 +444,29 @@
       document.getElementById('pdf-evalDeepThinking').innerText = data.evalDeepThinking || '-';
       document.getElementById('pdf-timestamp').innerText = new Date().toLocaleString();
 
-      // PDF生成用に画面の裏側に一時的に配置する（途切れるのを防ぐため）
-      wrapper.classList.remove('hidden');
-      wrapper.style.position = 'absolute';
-      wrapper.style.top = '0';
-      wrapper.style.left = '0';
-      wrapper.style.zIndex = '-9999';
-      wrapper.style.opacity = '0.01'; // 完全な透明にするとブラウザがサボる場合があるため
-      wrapper.style.pointerEvents = 'none';
-
-      // PDF出力の設定
+      // PDF出力の設定（pagebreak設定で途切れを防ぐ）
       const opt = {
-        margin: 10,
+        margin: [15, 10, 15, 10], // 上・右・下・左の余白(mm)
         filename: `実習報告書_${data.studentId}_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2,
-          windowWidth: 800,
-          y: 0,
-          scrollY: 0
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // ページ分割を最適化
       };
 
-      // PDF生成（awaitで完了を待つ）
+      // PDF生成
       try {
         await html2pdf().set(opt).from(template).save();
       } catch (err) {
         console.error('PDF生成エラー:', err);
-      } finally {
-        // 生成が終わったら再び隠す
-        wrapper.classList.add('hidden');
-        wrapper.style = '';
       }
     }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      // ★ ここが重要：PDF生成前に画面のスクロールを強制的に一番上に戻す
+      window.scrollTo(0, 0);
       
       const btn = document.getElementById('submit-btn');
       const btnText = document.getElementById('submit-text');
@@ -491,14 +486,14 @@
         }
       });
 
-      // 1. まずPDFを生成・ダウンロードさせる（エラーが起きても止まらないようにする）
+      // 1. PDF生成・ダウンロード
       try {
         await generatePDF(formData);
       } catch (err) {
         console.error('PDF生成エラー:', err);
       }
 
-      // 2. 次にGASへデータを送信する
+      // 2. GASへデータ送信
       try {
         btnText.innerText = 'データ送信中...';
         
