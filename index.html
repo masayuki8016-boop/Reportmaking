@@ -17,13 +17,7 @@
     }
     .hidden { display: none !important; }
     
-    /* --- PDF出力用のスタイル --- */
-    /* 画面には表示させず、PDF生成時のみ読み取れるように画面外に配置します */
-    #pdf-template-wrapper {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-    }
+    /* PDF出力用のスタイル */
     #pdf-template {
       width: 800px; /* PC幅に固定してレイアウト崩れを防ぐ */
       background-color: white;
@@ -40,6 +34,7 @@
     }
     .pdf-section {
       margin-bottom: 15px;
+      page-break-inside: avoid; /* 要素の途中でページが切れるのを防ぐ */
     }
     .pdf-label {
       font-weight: bold;
@@ -267,7 +262,7 @@
   </div>
 
   <!-- PDF生成用の隠しテンプレート（画面外に配置） -->
-  <div id="pdf-template-wrapper">
+  <div id="pdf-template-wrapper" class="hidden">
     <div id="pdf-template">
       <div class="pdf-header">
         <h1 style="font-size: 24px; margin: 0;">2年生実習「化学基礎」報告書</h1>
@@ -422,6 +417,7 @@
 
     // PDF生成とダウンロードを実行する関数
     async function generatePDF(data) {
+      const wrapper = document.getElementById('pdf-template-wrapper');
       const template = document.getElementById('pdf-template');
       
       // テンプレートにデータを反映
@@ -439,17 +435,39 @@
       document.getElementById('pdf-evalDeepThinking').innerText = data.evalDeepThinking || '-';
       document.getElementById('pdf-timestamp').innerText = new Date().toLocaleString();
 
+      // PDF生成用に画面の裏側に一時的に配置する（途切れるのを防ぐため）
+      wrapper.classList.remove('hidden');
+      wrapper.style.position = 'absolute';
+      wrapper.style.top = '0';
+      wrapper.style.left = '0';
+      wrapper.style.zIndex = '-9999';
+      wrapper.style.opacity = '0.01'; // 完全な透明にするとブラウザがサボる場合があるため
+      wrapper.style.pointerEvents = 'none';
+
       // PDF出力の設定
       const opt = {
         margin: 10,
         filename: `実習報告書_${data.studentId}_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { 
+          scale: 2,
+          windowWidth: 800,
+          y: 0,
+          scrollY: 0
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
       // PDF生成（awaitで完了を待つ）
-      await html2pdf().set(opt).from(template).save();
+      try {
+        await html2pdf().set(opt).from(template).save();
+      } catch (err) {
+        console.error('PDF生成エラー:', err);
+      } finally {
+        // 生成が終わったら再び隠す
+        wrapper.classList.add('hidden');
+        wrapper.style = '';
+      }
     }
 
     form.addEventListener('submit', async (e) => {
