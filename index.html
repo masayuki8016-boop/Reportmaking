@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2年生実習「化学基礎」</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- PDF生成ライブラリの読み込み -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -14,6 +16,50 @@
       animation: fadeIn 0.4s ease-out forwards;
     }
     .hidden { display: none !important; }
+    
+    /* PDF出力用のスタイル（ブラウザ上では非表示） */
+    #pdf-template {
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+      padding: 40px;
+      color: #333;
+      line-height: 1.6;
+    }
+    .pdf-header {
+      border-bottom: 2px solid #3b82f6;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+    .pdf-section {
+      margin-bottom: 15px;
+    }
+    .pdf-label {
+      font-weight: bold;
+      background: #f3f4f6;
+      padding: 4px 8px;
+      display: inline-block;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+    .pdf-content {
+      padding-left: 10px;
+      white-space: pre-wrap;
+      border-left: 3px solid #e5e7eb;
+      margin-left: 5px;
+    }
+    .pdf-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .pdf-eval-box {
+      border: 1px solid #e5e7eb;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -25,9 +71,11 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
       </svg>
       <h2 class="text-2xl font-bold text-gray-800 mb-2">送信完了！</h2>
-      <p class="text-gray-600 mb-6">
-        本日の実習、お疲れ様でした。<br />
-        データはスプレッドシートに保存されました。
+      <p class="text-gray-600 mb-2">
+        本日の実習、お疲れ様でした。
+      </p>
+      <p class="text-blue-600 font-bold mb-6">
+        報告書のPDFをダウンロードしました。<br>各自で保管してください。
       </p>
       <button onclick="resetForm()" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-200">
         新しい報告書を書く
@@ -41,7 +89,7 @@
     <div class="bg-blue-600 px-6 py-4 flex items-center justify-between text-white">
       <div class="flex items-center space-x-2">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
         </svg>
         <h1 class="text-xl font-bold">2年生実習「化学基礎」</h1>
       </div>
@@ -153,11 +201,10 @@
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
           </div>
 
-          <!-- 追加：⑩ 自己評価ルーブリック（タブレット最適化版） -->
+          <!-- ⑩ 自己評価ルーブリック -->
           <div>
             <label class="block text-base font-bold text-gray-700 mb-3">⑩ 自己評価（4:とてもそう思う 〜 1:そう思わない）</label>
             <div class="space-y-4 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
-              <!-- 評価項目1 -->
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span class="text-base text-gray-700 font-bold">主体的に実験・研究に取り組めた</span>
                 <div class="flex space-x-2 sm:space-x-3 bg-white p-1.5 rounded-xl border border-gray-200">
@@ -168,7 +215,6 @@
                 </div>
               </div>
               <hr class="border-gray-200">
-              <!-- 評価項目2 -->
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span class="text-base text-gray-700 font-bold">班員と協力し、役割を全うできた</span>
                 <div class="flex space-x-2 sm:space-x-3 bg-white p-1.5 rounded-xl border border-gray-200">
@@ -179,7 +225,6 @@
                 </div>
               </div>
               <hr class="border-gray-200">
-              <!-- 評価項目3 -->
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <span class="text-base text-gray-700 font-bold">結果に対して深く考察できた</span>
                 <div class="flex space-x-2 sm:space-x-3 bg-white p-1.5 rounded-xl border border-gray-200">
@@ -213,16 +258,88 @@
     </div>
   </div>
 
+  <!-- PDF生成用の隠しテンプレート -->
+  <div id="pdf-template" class="hidden">
+    <div class="pdf-header">
+      <h1 style="font-size: 24px; margin: 0;">2年生実習「化学基礎」報告書</h1>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">① クラス番号</div>
+      <div class="pdf-content" id="pdf-studentId"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">② 本日の目標</div>
+      <div class="pdf-content" id="pdf-goal"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">③ 使用する器具、試薬等</div>
+      <div class="pdf-content" id="pdf-equipment"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">④ 実施計画</div>
+      <div class="pdf-content" id="pdf-plan"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">⑤ 実施内容</div>
+      <div class="pdf-content" id="pdf-content"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">⑥ 実施結果</div>
+      <div class="pdf-content" id="pdf-result"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">⑦ 考察と改善</div>
+      <div class="pdf-content" id="pdf-reflection"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">⑧ 次回に向けて</div>
+      <div class="pdf-content" id="pdf-nextStepPlan"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">⑨ 感想</div>
+      <div class="pdf-content" id="pdf-impressions"></div>
+    </div>
+    
+    <div class="pdf-section">
+      <div class="pdf-label">⑩ 自己評価</div>
+      <div class="pdf-grid">
+        <div class="pdf-eval-box">
+          <div style="font-size: 12px; color: #666;">主体性</div>
+          <div style="font-size: 18px; font-weight: bold;" id="pdf-evalProactive"></div>
+        </div>
+        <div class="pdf-eval-box">
+          <div style="font-size: 12px; color: #666;">協働性</div>
+          <div style="font-size: 18px; font-weight: bold;" id="pdf-evalTeamwork"></div>
+        </div>
+        <div class="pdf-eval-box">
+          <div style="font-size: 12px; color: #666;">考察力</div>
+          <div style="font-size: 18px; font-weight: bold;" id="pdf-evalDeepThinking"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 30px; font-size: 10px; color: #999; text-align: right;">
+      発行日時: <span id="pdf-timestamp"></span>
+    </div>
+  </div>
+
   <script>
     // ★ GASのウェブアプリURL設定済み ★
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbzrDyBJpFGBp0Otd3hxtmNAJSF3F8EW4mXAk_Dv46I1u6TKi4LlYPjL6NcuIiBwoirp/exec';
     
-    // フォームの要素を取得
     const form = document.getElementById('log-form');
     const inputs = form.querySelectorAll('input, textarea');
     let currentStep = 1;
 
-    // ローカルストレージ（自動保存）からデータを復元
     window.onload = () => {
       const savedData = localStorage.getItem('researchLogData');
       if (savedData) {
@@ -241,10 +358,8 @@
       if (savedStep) goToPage(parseInt(savedStep));
     };
 
-    // 入力があるたびに自動保存
     inputs.forEach(input => {
       input.addEventListener('input', () => {
-        // 全角数字が入力されたら自動的に半角に変換する
         if (input.name === 'studentId') {
           input.value = input.value.replace(/[０-９]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
@@ -261,7 +376,6 @@
         });
         localStorage.setItem('researchLogData', JSON.stringify(data));
         
-        // 入力中にクラス番号が正しく直されたらエラー表示を消す
         if (input.name === 'studentId' && /^[0-9]{4}$/.test(input.value)) {
           document.getElementById('studentId-error').classList.add('hidden');
           input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
@@ -270,69 +384,82 @@
       });
     });
 
-    // ページ切り替え処理
     function goToPage(step) {
       if (step === 2) {
-        // クラス番号のバリデーション（半角数字4桁チェック）
         const studentIdInput = document.getElementById('studentId');
         const studentId = studentIdInput.value;
         const errorMsg = document.getElementById('studentId-error');
 
         if (!/^[0-9]{4}$/.test(studentId)) {
-          // エラーの視覚的表示
           errorMsg.classList.remove('hidden');
           studentIdInput.classList.remove('border-gray-300', 'focus:border-blue-500', 'focus:ring-blue-500');
           studentIdInput.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
-          
-          // 入力欄を揺らして気づかせるアニメーション
-          studentIdInput.animate([
-            { transform: 'translateX(0)' },
-            { transform: 'translateX(-5px)' },
-            { transform: 'translateX(5px)' },
-            { transform: 'translateX(-5px)' },
-            { transform: 'translateX(5px)' },
-            { transform: 'translateX(0)' }
-          ], { duration: 300 });
-          
+          studentIdInput.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 300 });
           studentIdInput.focus();
-          return; // 次のページに進ませない
+          return;
         }
       }
 
       currentStep = step;
       localStorage.setItem('researchLogStep', step);
-      
       document.getElementById('page-1').classList.toggle('hidden', step !== 1);
       document.getElementById('page-2').classList.toggle('hidden', step !== 2);
-      
       document.getElementById('page-title').innerText = step === 1 ? '1. 計画' : '2. 実験後の記録';
       document.getElementById('page-indicator').innerText = `Page ${step} / 2`;
       document.getElementById('progress-bar').style.width = step === 1 ? '50%' : '100%';
-      
       window.scrollTo(0, 0);
     }
 
-    // 送信処理
+    // PDF生成とダウンロードを実行する関数
+    async function generatePDF(data) {
+      const template = document.getElementById('pdf-template');
+      template.classList.remove('hidden');
+      
+      // テンプレートにデータを反映
+      document.getElementById('pdf-studentId').innerText = data.studentId;
+      document.getElementById('pdf-goal').innerText = data.goal || '(未入力)';
+      document.getElementById('pdf-equipment').innerText = data.equipment || '(未入力)';
+      document.getElementById('pdf-plan').innerText = data.plan || '(未入力)';
+      document.getElementById('pdf-content').innerText = data.content || '(未入力)';
+      document.getElementById('pdf-result').innerText = data.result || '(未入力)';
+      document.getElementById('pdf-reflection').innerText = data.reflection || '(未入力)';
+      document.getElementById('pdf-nextStepPlan').innerText = data.nextStepPlan || '(未入力)';
+      document.getElementById('pdf-impressions').innerText = data.impressions || '(未入力)';
+      document.getElementById('pdf-evalProactive').innerText = data.evalProactive || '-';
+      document.getElementById('pdf-evalTeamwork').innerText = data.evalTeamwork || '-';
+      document.getElementById('pdf-evalDeepThinking').innerText = data.evalDeepThinking || '-';
+      document.getElementById('pdf-timestamp').innerText = new Date().toLocaleString();
+
+      // PDF出力の設定
+      const opt = {
+        margin: 10,
+        filename: `実習報告書_${data.studentId}_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      try {
+        await html2pdf().set(opt).from(template).save();
+      } catch (err) {
+        console.error('PDF生成エラー:', err);
+      } finally {
+        template.classList.add('hidden'); // PDF生成後に再び隠す
+      }
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      if (GAS_URL === 'YOUR_GAS_WEB_APP_URL_HERE') {
-        alert('エラー: GASのURLが設定されていません。HTMLファイルのコードを書き換えてください。');
-        return;
-      }
-
-      // 送信中UIに変更
       const btn = document.getElementById('submit-btn');
       const btnText = document.getElementById('submit-text');
       const btnIcon = document.getElementById('submit-icon');
       
       btn.disabled = true;
-      btn.classList.replace('bg-blue-600', 'bg-blue-400');
-      btn.classList.replace('hover:bg-blue-700', 'hover:bg-blue-400');
+      btn.classList.add('opacity-50');
       btnText.innerText = '送信中...';
       btnIcon.classList.add('hidden');
 
-      // 送信データの作成
       const formData = {};
       inputs.forEach(i => {
         if (i.type === 'radio') {
@@ -343,20 +470,21 @@
       });
 
       try {
-        // GASへデータ送信
+        // 1. まずGASへデータを送信する
         await fetch(GAS_URL, {
           method: 'POST',
-          // CORSエラーを回避するため text/plain で送信
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify(formData)
         });
 
-        // 成功処理
+        // 2. 送信成功後、PDFを生成してダウンロードさせる
+        await generatePDF(formData);
+
+        // 3. 成功画面に切り替え
         document.getElementById('app-screen').classList.add('hidden');
         document.getElementById('success-screen').classList.remove('hidden');
         document.getElementById('success-screen').classList.add('flex');
         
-        // 保存データをクリア
         localStorage.removeItem('researchLogData');
         localStorage.removeItem('researchLogStep');
 
@@ -364,16 +492,13 @@
         alert('送信エラーが発生しました。インターネット接続を確認してください。');
         console.error(error);
       } finally {
-        // ボタンUIを戻す
         btn.disabled = false;
-        btn.classList.replace('bg-blue-400', 'bg-blue-600');
-        btn.classList.replace('hover:bg-blue-400', 'hover:bg-blue-700');
+        btn.classList.remove('opacity-50');
         btnText.innerText = '報告書を送信する';
         btnIcon.classList.remove('hidden');
       }
     });
 
-    // リセット処理
     function resetForm() {
       form.reset();
       localStorage.removeItem('researchLogData');
